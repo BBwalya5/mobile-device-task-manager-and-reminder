@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grace's Task Manager with Reminders</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+input[type="text"], select, input[type="date"], input[type="time"] {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #45a049;
+}
+.completed {
+  text-decoration: line-through;
+  color: #888;
+}
+.passed {
+  color: #888; /* Change color to gray for passed tasks */
+}
+.quote-container {
+  margin-top: 20px;
+}
+.quote {
+  font-style: italic;
+  color: #555;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Grace's Task Manager with Reminders</h2>
+
+  <div class="quote-container">
+    <p class="quote" id="quote"></p>
+  </div>
+
+  <form id="taskForm">
+    <label for="task">Task:</label>
+    <input type="text" id="task" name="task" placeholder="Enter task name">
+
+    <label for="category">Category:</label>
+    <select id="category" name="category">
+      <option value="work">Work</option>
+      <option value="personal">Personal</option>
+      <option value="errands">Errands</option>
+    </select>
+
+    <label for="deadlineDate">Deadline Date:</label>
+    <input type="date" id="deadlineDate" name="deadlineDate">
+
+    <label for="deadlineTime">Deadline Time:</label>
+    <input type="time" id="deadlineTime" name="deadlineTime">
+
+    <label for="priority">Priority:</label>
+    <select id="priority" name="priority">
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+    </select>
+
+    <button type="button" onclick="addTask()">Add Task</button>
+  </form>
+
+  <h3>Tasks:</h3>
+  <ul id="taskList"></ul>
+</div>
+
+<script>
+// Quotes and Inspirations
+var quotes = [
+    "The only way to do great work is to love what you do. - Steve Jobs",
+    "Believe you can and you're halfway there. - Theodore Roosevelt",
+    "It does not matter how slowly you go as long as you do not stop. - Confucius",
+    "Your limitation—it's only your imagination.",
+    "Push yourself, because no one else is going to do it for you.",
+    "Success is not final, failure is not fatal: It is the courage to continue that counts. - Winston Churchill",
+    "Opportunities don't happen, you create them. - Chris Grosser",
+    "Believe in yourself. You are braver than you think, more talented than you know, and capable of more than you imagine. - Roy T. Bennett",
+    "The only limit to our realization of tomorrow will be our doubts of today. - Franklin D. Roosevelt",
+    "The only person you should try to be better than is the person you were yesterday.",
+    "In Zambia, you can be rich or poor. But what you cannot be is without friends. - Zambian Proverb",
+    "Unity is strength, division is weakness. - Zambian Proverb",
+    "The sun never sets without fresh news from home. - Zambian Proverb",
+    "A person becomes wise by asking questions. - Zambian Proverb",
+    "If you close your eyes to facts, you will learn through accidents. - Zambian Proverb",
+    "A single bracelet does not jingle. - Congolese Proverb",
+    "He who learns, teaches. - Ethiopian Proverb",
+    "Do not look where you fell, but where you slipped. - Kenyan Proverb"
+];
+
+// Function to shuffle an array
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
+
+// Shuffle the quotes array
+quotes = shuffleArray(quotes);
+
+// Function to display a new quote every 10 seconds
+var index = 0;
+function displayQuote() {
+    document.getElementById("quote").textContent = quotes[index];
+    index = (index + 1) % quotes.length;
+}
+displayQuote();
+setInterval(displayQuote, 10000);
+
+// Function to load tasks from localStorage
+function loadTasks() {
+    for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        var taskData = JSON.parse(localStorage.getItem(key));
+        renderTask(taskData);
+    }
+}
+
+// Function to add a task
+function addTask() {
+    var task = document.getElementById("task").value.trim();
+    var category = document.getElementById("category").value;
+    var deadlineDate = document.getElementById("deadlineDate").value;
+    var deadlineTime = document.getElementById("deadlineTime").value;
+    var priority = document.getElementById("priority").value;
+
+    if (!task || !category || !deadlineDate || !deadlineTime || !priority) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    var deadline = new Date(deadlineDate + "T" + deadlineTime);
+    var taskData = {
+        task: task,
+        category: category,
+        deadline: deadline,
+        priority: priority
+    };
+
+    localStorage.setItem(task.replace(/\s+/g, ''), JSON.stringify(taskData));
+    renderTask(taskData);
+    document.getElementById("taskForm").reset();
+
+    if (deadlineDate && deadlineTime) {
+        checkReminders();
+    }
+}
+
+// Function to render a task
+function renderTask(taskData) {
+    var taskItem = "<li id='" + taskData.task.replace(/\s+/g, '') + "'><span>" + taskData.task + "</span> - Category: " + taskData.category + ", Deadline: " + taskData.deadline + ", Priority: " + taskData.priority + " <button onclick='completeTask(\"" + taskData.task.replace(/\s+/g, '') + "\")'>Complete</button> <button onclick='removeTask(\"" + taskData.task.replace(/\s+/g, '') + "\")'>Remove</button></li>";
+    document.getElementById("taskList").innerHTML += taskItem;
+}
+
+// Function to check for upcoming deadlines and display reminders
+function checkReminders() {
+    var now = new Date();
+    for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        var taskData = JSON.parse(localStorage.getItem(key));
+        var taskDeadline = new Date(taskData.deadline);
+        if (taskDeadline <= now) {
+            if (Notification.permission === "granted") {
+                new Notification("Grace's Task Reminder", {
+                    body: "Hey Grace! The deadline for task '" + taskData.task + "' has passed!"
+                });
+            }
+        }
+    }
+}
+
+// Function to complete a task
+function completeTask(taskId) {
+    var taskElement = document.getElementById(taskId);
+    taskElement.classList.add("completed");
+}
+
+// Function to remove a task
+function removeTask(taskId) {
+    localStorage.removeItem(taskId);
+    var taskElement = document.getElementById(taskId);
+    taskElement.remove();
+}
+
+// Check reminders every minute
+setInterval(checkReminders, 60000);
+
+// Call loadTasks function when the page loads
+loadTasks();
+</script>
+
+</body>
+</html>
