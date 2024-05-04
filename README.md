@@ -1,4 +1,4 @@
-# Grace's Task Manager
+#  Task Manager
 
 Welcome to Grace's Task Manager! This is a simple web application for organizing and managing tasks, to-do lists, and priorities.
 
@@ -28,9 +28,7 @@ Welcome to Grace's Task Manager! This is a simple web application for organizing
 
 Contributions are welcome! If you have any suggestions, feature requests, or bug reports, please [open an issue](https://github.com/your-username/your-repository/issues) or [create a pull request](https://github.com/your-username/your-repository/pulls).
 
-## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
